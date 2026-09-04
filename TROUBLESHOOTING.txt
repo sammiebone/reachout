@@ -1,0 +1,423 @@
+REACHOUT TROUBLESHOOTING GUIDE
+
+Detailed solutions for common issues.
+
+FRONTEND ISSUES
+
+Application not loading
+
+Check browser console for errors
+Press F12 or right-click, select Inspect
+Look for red error messages
+Screenshot error message
+Share with development team
+
+Frontend server not starting
+npm run dev fails
+
+npm ERR! code ERESOLVE
+npm ERR! ERESOLVE unable to resolve dependency tree
+
+Solution:
+npm install --legacy-peer-deps
+Or upgrade packages manually
+Check Node.js version is 16+
+
+Port 3000 already in use
+Error: listen EADDRINUSE :::3000
+
+Solution:
+Kill process on port 3000
+sudo lsof -i :3000 on Mac/Linux
+taskkill /PID <pid> /F on Windows
+Change port in vite.config.js
+
+Module not found errors
+
+Module not found: can't resolve 'axios'
+
+Solution:
+npm install axios
+cd client && npm install && cd ..
+Delete node_modules and reinstall
+npm cache clean --force
+
+React rendering errors
+
+Blank white page with no errors
+
+Solution:
+Check index.html content loads
+Verify main.jsx file exists
+Check App.jsx is syntactically correct
+Clear browser cache
+Try different browser
+
+BACKEND ISSUES
+
+Server not starting
+npm run server:dev fails
+
+Error: Cannot find module 'express'
+
+Solution:
+npm install in root directory
+Check package.json is correct
+Verify Node.js installed properly
+Clear npm cache if needed
+
+Port 5000 already in use
+Error: listen EADDRINUSE :::5000
+
+Solution:
+Change PORT in .env
+Kill process using port 5000
+lsof -i :5000 on Mac/Linux
+taskkill /PID <pid> /F on Windows
+
+Environment variables not loading
+
+API calls fail with credential errors
+Twilio/Gmail API errors
+
+Solution:
+Verify .env file exists in root directory
+Check .env has no quotes around values
+Verify no spaces in .env file
+Restart server after changing .env
+Check NODE_ENV is set correctly
+console.log to verify variables load
+
+Nodemailer authentication failed
+
+Error: Invalid login: 535-5.7.8 Username and password not accepted
+
+Solution:
+Verify EMAIL_USER is correct Gmail address
+Check EMAIL_PASSWORD is app password, not Gmail password
+Regenerate app password in Google account
+Enable less secure app access if needed
+Verify 2FA is enabled on Gmail account
+
+Twilio authentication failed
+
+Error: Authentication failed with Twilio
+
+Solution:
+Verify TWILIO_ACCOUNT_SID is correct
+Verify TWILIO_AUTH_TOKEN is correct
+Check credentials in Twilio console
+Regenerate API credentials if needed
+Verify account has active status
+
+COMMUNICATION ISSUES
+
+Emails not sending
+
+Email sent but not received
+
+Check spam/junk folder
+Verify recipient email address correct
+Check email address format
+Look for bounce messages
+
+Email takes too long to deliver
+
+Gmail rate limiting at 300 emails per minute
+Implement delays between sends
+Check Gmail account restrictions
+Verify sending limits not exceeded
+
+SMS not sending
+
+SMS not delivered to phone
+
+Verify phone number includes country code
+Check phone number format: +1234567890
+Verify phone number is active mobile device
+Try adding phone number manually with country code
+
+Only some SMS sending
+
+Some phone numbers work, others don't
+
+International numbers need proper country code
+Verify each phone number individually
+Check Twilio account has funds
+Verify phone numbers in target country supported
+
+SMS delivery very slow
+
+SMS takes over 30 seconds to arrive
+
+Network latency issue
+Twilio service delay
+Mobile carrier queue
+Check Twilio dashboard for status
+
+FORM VALIDATION ISSUES
+
+Email validation failing
+
+Error: Please enter a valid email address
+
+Verify email format is user@domain.com
+Check for spaces in email
+Verify no special characters except @
+Try different email address
+
+Phone number validation failing
+
+Error: Phone number must have at least 10 digits
+
+Remove dashes and parentheses
+Enter only digits and country code
+Include country code +1
+Minimum 10 digits required
+
+Empty message error
+
+Error: Message body cannot be empty
+
+Click in editor area to focus
+Type at least one character
+Verify text appears in editor
+HTML generated should not be empty
+
+UI ISSUES
+
+Formatting toolbar not showing
+
+Toolbar hidden or not visible
+
+Refresh browser page
+Check browser zoom level is 100%
+Verify CSS file loaded correctly
+Check browser console for CSS errors
+Try in different browser
+
+Message editor not responding
+
+Can't type in editor
+
+Click directly in white text area
+Verify TipTap editor initialized
+Check browser console for errors
+Refresh page and try again
+Disable browser extensions
+
+Buttons not clickable
+
+Send Message button grayed out
+
+Wait for loading to complete
+Check form validation passed
+Verify all required fields filled
+Look for error messages in form
+
+Loading spinner stuck
+
+Spinner shows but message never sends
+
+Check server is running
+Monitor network requests in browser
+Check server logs for errors
+Verify API endpoint accessible
+Restart both frontend and backend
+
+NETWORK ISSUES
+
+CORS errors
+
+Error: No Access-Control-Allow-Origin header
+
+CORS already configured in Express
+Verify backend running on correct port
+Check frontend calling correct URL
+Try clearing browser cache
+Disable browser extensions
+
+Connection refused errors
+
+Error: Could not connect to server
+Error: Failed to fetch from /api/send
+
+Verify backend server running
+Check server running on port 5000
+Verify frontend calling localhost:5000
+Check firewall allows connections
+Restart server and try again
+
+Timeout errors
+
+Request timed out
+Request takes over 60 seconds
+
+Check internet connection
+Verify Twilio/Gmail APIs responding
+Check server resources
+Monitor network latency
+Add timeout handling in code
+
+API call failures
+
+API responds with error 500
+
+Check server error logs
+Verify credentials are correct
+Check API endpoint URL correct
+Verify request body format correct
+Look for stack trace in console
+
+PERFORMANCE ISSUES
+
+Slow message sending
+
+Messages take over 30 seconds to send
+
+Network latency
+Service API delays
+Server performance
+Database queries slow
+
+Implement caching
+Optimize API calls
+Use background jobs
+Monitor server resources
+
+High memory usage
+
+Server consuming too much RAM
+
+Check for memory leaks
+Monitor Node.js heap size
+Implement garbage collection
+Profile application
+Optimize data structures
+
+DEPLOYMENT ISSUES
+
+Build fails during deployment
+
+npm run build fails
+
+Check all dependencies installed
+Verify no TypeScript errors
+Check for missing environment variables
+Review build output for errors
+Check disk space available
+
+Application crashes after deploy
+
+App runs locally but crashes in production
+
+Check all environment variables set
+Verify MongoDB/database connection
+Check error logs on hosting platform
+Monitor memory and CPU usage
+Enable debug logging
+
+Emails not sending in production
+
+Works locally but fails in production
+
+Verify EMAIL_USER and EMAIL_PASSWORD set
+Check Gmail security settings
+Verify app password correct in production
+Check for IP blocking by Gmail
+Monitor Gmail login attempts
+
+SMS not sending in production
+
+Works locally but fails in production
+
+Verify Twilio credentials in production
+Check Twilio account has active status
+Verify phone numbers correct
+Monitor Twilio usage dashboard
+Check for Twilio geographic restrictions
+
+DEBUGGING STEPS
+
+1. Check browser console
+   Press F12
+   Look for JavaScript errors
+   Check Network tab for failed requests
+
+2. Check server console
+   Look for error messages
+   Check request logging output
+   Monitor CPU and memory
+
+3. Check logs
+   Application logs
+   Server error logs
+   Email delivery logs
+   SMS delivery logs
+
+4. Test individual components
+   Test email separately
+   Test SMS separately
+   Test form validation
+   Test editor functionality
+
+5. Verify credentials
+   Test Twilio credentials directly
+   Test Gmail credentials directly
+   Check .env file loaded
+   Verify no typos in credentials
+
+GETTING HELP
+
+Document the issue
+Error message exactly as shown
+Steps to reproduce issue
+Screenshots of error
+Browser and OS version
+Node.js version
+What works vs what doesn't
+
+Share information
+Error logs from console
+Server console output
+Network requests from browser
+.env variables masked except structure
+
+Useful commands
+npm list (show dependencies)
+node --version (check Node version)
+npm --version (check npm version)
+echo $PATH (verify installation)
+npm run dev (start everything)
+
+RESET EVERYTHING
+
+If nothing works, start fresh
+
+Clear dependencies
+rm -rf node_modules
+rm package-lock.json
+
+Clear cache
+npm cache clean --force
+
+Reinstall everything
+npm install
+cd client && npm install && cd ..
+
+Restart server
+npm run dev
+
+EMERGENCY CONTACTS
+
+Twilio Support: https://www.twilio.com/help
+Gmail Support: https://support.google.com/mail
+Node.js Issues: https://nodejs.org/
+GitHub Issues: Report bugs in repository
+
+Prevention measures keep problems from occurring
+Implement error handling everywhere
+Log all important events
+Monitor application health
+Set up alerts for failures
+Test before production deployment

@@ -1,0 +1,440 @@
+REACHOUT CONFIGURATION DETAILS
+
+Comprehensive configuration guide for all environment variables and settings.
+
+ENVIRONMENT VARIABLES
+
+File Location: .env (root directory)
+
+PORT
+Type: Integer
+Default: 5000
+Description: Server port for backend API
+Example: PORT=5000
+Range: 1024-65535
+Notes: Must not conflict with other services
+
+NODE_ENV
+Type: String
+Values: development, production
+Default: development
+Description: Application environment mode
+Example: NODE_ENV=production
+Production: Enables optimizations, disables debug output
+Development: Includes debugging, verbose logging
+
+PYTHON SMS-SENDER CONFIGURATION
+
+SMS_PROVIDER
+Type: String
+Value: python-sms-sender
+Description: Identifier for SMS delivery service
+Example: SMS_PROVIDER=python-sms-sender
+Importance: Used for logging and tracking
+
+Installation Requirements
+
+Python 3.8 or higher
+SMS-Sender package from GitHub
+Python dependencies (requests, python-dotenv)
+
+Setting up Python SMS-Sender
+
+1. Clone SMS-Sender repository
+   git clone https://github.com/farukalpay/SMS-Sender.git
+
+2. Install Python dependencies
+   pip3 install -r requirements.txt
+
+3. Configure SMS gateway
+   Follow SMS-Sender/README.md
+   Set up API credentials for your SMS provider
+   Support for multiple SMS gateways
+
+4. Test SMS sending
+   cd SMS-Sender
+   python3 main.py <phone_number> <message>
+   cd ..
+
+SMS Gateway Configuration
+
+Different SMS providers require different setup
+Research SMS-Sender documentation for your gateway
+Common providers: AWS SNS, Nexmo, Twilio via SMS-Sender
+Configure provider credentials in SMS-Sender config
+
+Gmail CONFIGURATION
+
+EMAIL_USER
+Type: String
+Format: Valid Gmail email address
+Example: myemail@gmail.com
+Requirement: Must have Gmail account
+Importance: Used as sender address for emails
+
+EMAIL_PASSWORD
+Type: String
+Description: Gmail app-specific password, not account password
+Example: abcd efgh ijkl mnop
+Length: 16 characters with spaces
+Security: Different from Gmail password
+Importance: Critical for email delivery
+
+Setting up Gmail
+
+1. Ensure Gmail account uses 2-Step Verification:
+   - Visit myaccount.google.com
+   - Click Security in left menu
+   - Enable 2-Step Verification if not enabled
+
+2. Generate App Password:
+   - Go to myaccount.google.com/apppasswords
+   - Select application: Mail
+   - Select device: Windows Computer (or your device)
+   - Google generates 16-character password
+   - Copy all 16 characters including spaces
+   - Do not modify the password
+
+3. Add to .env:
+   EMAIL_USER=yourname@gmail.com
+   EMAIL_PASSWORD=abcd efgh ijkl mnop (with spaces)
+
+4. Test email sending:
+   - Use Nodemailer test in code
+   - Or send test message through UI
+
+Common Gmail issues
+
+Authentication fails
+- Verify EMAIL_PASSWORD is app password
+- Regenerate app password if needed
+- Confirm 2-Step Verification enabled
+- Check correct Gmail address used
+
+Emails go to spam
+- Warm up account with low volume
+- Implement SPF/DKIM authentication
+- Use verified sender domain
+- Monitor Gmail feedback loop
+
+Rate limiting
+- Gmail throttles at 300 emails per minute
+- Implement delays for bulk sends
+- Use task queue for high volume
+- Monitor account restrictions
+
+FRONTEND CONFIGURATION
+
+Vite Configuration File: client/vite.config.js
+
+Development Server Port: 5173 (default)
+API Proxy: http://localhost:5000
+Build Output: client/dist/
+Public Assets: client/public/
+
+CSS Variables for Theming
+
+Primary Gradient: #667eea to #764ba2
+Accent Color: #e74c3c
+Border Color: #e0e0e0
+Text Color: #333
+Background: #f5f5f5
+
+Modify in client/src/index.css
+
+BACKEND CONFIGURATION
+
+Express Server Settings
+
+Middleware:
+CORS enabled for all origins
+Body parser JSON limit: 100kb
+Request timeout: 30 seconds
+Static file serving: client/dist
+
+Endpoints:
+POST /api/send - Main message endpoint
+GET /* - Serve React app (SPA)
+
+TWILIO SERVICE CONFIGURATION
+
+SMS Message Settings
+
+From: TWILIO_PHONE_NUMBER (configured)
+To: Phone numbers from request
+Format: Plain text only
+Max length: 160 characters per segment
+Rate limit: No limit enforced (implement in production)
+Delivery: Typically 5-10 seconds
+
+Character Handling
+
+Unicode characters supported
+Special characters handled
+Emoji supported if included
+Line breaks converted automatically
+HTML stripped before sending
+
+GMAIL SMTP CONFIGURATION
+
+Email Service Settings
+
+Service: Gmail SMTP
+Host: smtp.gmail.com
+Port: 587 (TLS)
+Authentication: EMAIL_USER and EMAIL_PASSWORD
+Encryption: TLS
+
+Email Message Settings
+
+From: EMAIL_USER (configured)
+To: Email from request
+Subject: Your Message
+Content Type: Multipart (HTML and plain text)
+Attachments: Not implemented
+
+Rate Limits
+
+Gmail throttles at 300 emails per hour
+App password limited to one device
+Account recovery options recommended
+Enable backup verification methods
+
+LOGGING CONFIGURATION
+
+Current Implementation
+
+Console logging to stdout
+Error logging for troubleshooting
+Request logging for debugging
+No file-based logging
+
+Production Logging Recommendations
+
+Implement structured JSON logging
+Log to file system or cloud service
+Use log aggregation service
+Set up log rotation
+Monitor for errors automatically
+
+DATABASE CONFIGURATION (Future Enhancement)
+
+PostgreSQL Example
+
+Host: localhost
+Port: 5432
+Database: reachout
+User: postgres
+Password: secure_password
+
+Connection String
+postgresql://user:password@localhost:5432/reachout
+
+Environmental Variables for Database
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=reachout
+DB_USER=postgres
+DB_PASSWORD=secure_password
+
+SECURITY CONFIGURATION
+
+HTTPS Setup (Production)
+
+Enable HTTPS only
+Obtain SSL certificate
+Force HTTPS redirect
+Set security headers
+Implement HSTS
+
+Authentication Setup (Recommended)
+
+API Key authentication
+JWT token authentication
+User sessions
+Rate limiting
+Request validation
+
+CORS Configuration
+
+Current: Allow all origins
+Recommended Production: Specific domain only
+
+Modify in server.js:
+
+cors({
+  origin: ['https://yourdomain.com'],
+  credentials: true,
+  optionsSuccessStatus: 200
+})
+
+RATE LIMITING CONFIGURATION (Future)
+
+Recommended Implementation
+
+Per-IP rate limit: 100 requests per hour
+Per-user rate limit: 1000 requests per hour
+SMS sending: 10 per minute per user
+Email sending: 50 per minute per user
+
+Use redis for distributed rate limiting
+Implement exponential backoff for retries
+
+CACHING CONFIGURATION (Future)
+
+Redis Cache Setup
+
+Host: localhost
+Port: 6379
+Database: 0
+TTL: 3600 seconds
+
+Cache strategies
+Cache API responses
+Cache template rendering
+Cache user data
+Cache SMS delivery status
+
+API RESPONSE CONFIGURATION
+
+JSON Response Format
+
+Success response includes:
+- success: true/false
+- data or error fields
+- timestamp
+- request ID for tracking
+
+Error response format
+
+{
+  "error": "descriptive error message",
+  "code": "ERROR_CODE",
+  "timestamp": "2024-01-01T00:00:00Z",
+  "requestId": "uuid"
+}
+
+STATUS CODES
+
+200: Success
+400: Bad request (validation error)
+401: Unauthorized
+403: Forbidden
+404: Not found
+429: Rate limited
+500: Server error
+503: Service unavailable
+
+FEATURE FLAGS (Future Implementation)
+
+Examples of useful feature flags
+
+NEW_DASHBOARD_ENABLED=true
+BETA_FEATURES_ENABLED=false
+MAINTENANCE_MODE=false
+SMS_DISABLED=false
+EMAIL_DISABLED=false
+
+PAYMENT CONFIGURATION (Future)
+
+Stripe Setup
+
+Stripe Public Key: pk_test_...
+Stripe Secret Key: sk_test_...
+Webhook Secret: whsec_...
+
+Billing Models
+
+Pay per SMS: $0.01-0.05 each
+Email sending: Generally free
+API calls: Variable pricing
+Monthly subscription: Optional
+
+PERFORMANCE TUNING
+
+Memory Configuration
+
+Node.js heap size: 512MB default
+Increase for large data processing
+Monitor for memory leaks
+Implement garbage collection
+
+Connection Pooling
+
+Database connection pool: 10-20
+Email client pool: 5
+SMS client pool: 10
+Adjust based on load testing
+
+BACKUP CONFIGURATION
+
+Database Backups
+
+Frequency: Daily backups
+Retention: 30 days minimum
+Location: Separate storage
+Testing: Verify restoration works
+
+Credential Backups
+
+Store securely in vault
+Do not commit to git
+Rotate periodically
+Enable multi-factor auth
+
+MONITORING CONFIGURATION
+
+Key Metrics to Track
+
+API response times
+Error rates
+Message delivery success rates
+Active users
+Database query times
+Server resource usage
+Twilio account balance
+Gmail sending rate
+
+Alert Conditions
+
+High error rate (over 5%)
+API response time over 5 seconds
+Server CPU over 80%
+Memory usage over 85%
+Database connection failures
+Authentication failures
+Low Twilio balance
+
+Implementation Tools
+
+Application Performance Monitoring
+New Relic
+Datadog
+CloudWatch
+
+Error Tracking
+Sentry
+Rollbar
+Bugsnag
+
+Verify Configuration
+
+After setting up environment variables:
+1. Restart server
+2. Check console for errors
+3. Test email sending
+4. Test SMS sending
+5. Verify API responses
+6. Monitor logs for warnings
+
+Configuration Validation Checklist
+
+.env file exists
+No quotes around values
+No trailing spaces
+All required variables present
+Credentials are correct
+Ports are available
+No syntax errors
+File permissions allow reading

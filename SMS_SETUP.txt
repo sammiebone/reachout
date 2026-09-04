@@ -1,0 +1,283 @@
+PYTHON SMS-SENDER SETUP GUIDE
+
+This application uses the Python SMS-Sender package for sending SMS messages.
+
+REQUIREMENTS
+
+Python 3.8 or higher
+Git
+pip (Python package manager)
+Node.js 16 or higher
+
+INSTALLATION STEPS
+
+1. Install Python
+   Download from https://www.python.org
+   Verify with python3 --version
+   Recommend Python 3.9 or higher
+
+2. Clone SMS-Sender repository
+   git clone https://github.com/farukalpay/SMS-Sender.git
+   This creates SMS-Sender directory in project root
+
+3. Install Python dependencies
+   pip3 install -r requirements.txt
+   Installs requests and python-dotenv
+
+4. Verify SMS-Sender setup
+   cd SMS-Sender
+   Check that main.py exists
+   Review README.md for configuration
+   cd ..
+
+HOW IT WORKS
+
+Frontend sends message to backend API
+Backend strips HTML to plain text
+Backend calls Python SMS service via child process
+Python service runs SMS-Sender main.py for each phone number
+SMS-Sender connects to SMS gateway and sends message
+Results returned to backend
+Backend responds to frontend with status
+
+INTEGRATION ARCHITECTURE
+
+Node.js Backend (server.js)
+  └─ Spawns Python Process (sms_service.py)
+     └─ Calls SMS-Sender (main.py)
+        └─ Sends SMS via gateway
+
+PHONE NUMBER FORMAT
+
+Required format for SMS-Sender
+Remove all non-digit characters from phone number
+Use only numeric digits
+Example: 5551234567
+
+The application automatically cleans phone numbers:
++1 (555) 123-4567 becomes 5551234567
+
+TESTING SMS SENDING
+
+1. Start application
+   npm run dev
+
+2. Enter test phone number
+   Your actual mobile phone number
+
+3. Send test message
+   Fill form and click Send Message
+   Check phone for SMS
+
+4. Monitor console
+   Watch server terminal for SMS service output
+   Look for success or error messages
+
+SMS-SENDER CONFIGURATION
+
+The SMS-Sender package may require configuration
+Review SMS-Sender/README.md for details
+Configure API credentials if needed
+Set up SMS gateway account
+Some services may require phone verification
+
+COMMON SMS GATEWAYS SUPPORTED
+
+SMS-Sender supports multiple gateways
+Check SMS-Sender documentation for list
+Configure appropriate gateway credentials
+Update SMS-Sender configuration files
+
+TROUBLESHOOTING
+
+Python SMS service not found
+Error: SMS-Sender not installed
+
+Solution:
+git clone https://github.com/farukalpay/SMS-Sender.git
+Verify SMS-Sender directory exists in root
+Check main.py file is present
+
+Python not installed
+Error: python3: command not found
+
+Solution:
+Install Python from https://www.python.org
+Add Python to system PATH
+Verify with python3 --version
+
+SMS sending fails
+Error: Failed to send SMS to all numbers
+
+Solution:
+Verify phone number format is correct
+Check SMS-Sender configuration
+Verify SMS gateway credentials configured
+Check internet connection
+Review SMS-Sender logs
+
+Process timeout
+Error: SMS service timeout
+
+Solution:
+Increase timeout in server.js (currently 60 seconds)
+Check SMS gateway performance
+Reduce number of SMS in single request
+Verify network connection
+
+Permission denied error
+Error: Permission denied
+
+Solution:
+Make sure sms_service.py is readable
+chmod +x sms_service.py
+Run as user with Python execution permission
+
+Import errors
+Error: No module named requests
+
+Solution:
+pip3 install -r requirements.txt
+Verify requirements.txt has all dependencies
+Check Python virtual environment if used
+
+PERFORMANCE CONSIDERATIONS
+
+SMS sending is asynchronous
+Each phone number processed sequentially
+Typical send time: 5-30 seconds per SMS
+Network latency affects speed
+SMS gateway performance varies
+
+RATE LIMITING
+
+No rate limiting implemented
+Most SMS gateways have daily limits
+Check your SMS provider limits
+Monitor SMS sending volume
+Implement custom rate limiting if needed
+
+BILLING
+
+SMS costs depend on gateway
+Most SMS gateways charge per message
+Research SMS provider pricing
+Monitor monthly usage
+Set spending alerts
+
+SECURITY
+
+SMS-Sender repository is open source
+Review code before using in production
+Keep SMS-Sender updated
+Secure SMS gateway credentials
+Use environment variables for secrets
+Never commit credentials to git
+
+PRODUCTION DEPLOYMENT
+
+When deploying to production server:
+
+1. Install Python on server
+   apt-get install python3 (Linux)
+   brew install python3 (Mac)
+
+2. Clone SMS-Sender on server
+   git clone https://github.com/farukalpay/SMS-Sender.git
+
+3. Install Python dependencies on server
+   pip3 install -r requirements.txt
+
+4. Configure SMS gateway on server
+   Set up credentials
+   Test SMS sending
+
+5. Update server start script
+   Ensure Python available in server PATH
+   Test full deployment
+
+DOCKER DEPLOYMENT
+
+If using Docker for deployment:
+
+1. Dockerfile must include Python
+   FROM node:18 includes node
+   Add python installation to Dockerfile
+
+2. Example Dockerfile
+
+FROM node:18-alpine
+RUN apk add python3 py3-pip
+
+WORKDIR /app
+COPY . .
+
+RUN git clone https://github.com/farukalpay/SMS-Sender.git
+RUN pip3 install -r requirements.txt
+RUN npm install
+RUN cd client && npm install && cd ..
+
+EXPOSE 5000
+CMD ["npm", "start"]
+
+MONITORING SMS DELIVERY
+
+Check Node.js console for SMS service output
+Monitor SMS-Sender logs if available
+Track message IDs returned from Python service
+Log SMS delivery attempts
+Set up alerts for failures
+Monitor SMS gateway status
+
+UPDATING SMS-SENDER
+
+Keep SMS-Sender updated for bug fixes
+
+cd SMS-Sender
+git pull origin main
+cd ..
+
+Test after updating
+Monitor changelog for breaking changes
+
+SUPPORT AND DOCUMENTATION
+
+SMS-Sender Repository
+https://github.com/farukalpay/SMS-Sender
+Review README for latest information
+Check Issues for common problems
+Join discussions for help
+
+Python documentation
+https://docs.python.org/3
+
+Node.js child_process
+https://nodejs.org/api/child_process.html
+
+TESTING CHECKLIST
+
+Python 3 installed and accessible
+SMS-Sender cloned in root directory
+Python dependencies installed
+Node.js dependencies installed
+.env file configured with Gmail credentials
+Frontend loads without errors
+Backend server starts without errors
+SMS service spawns successfully
+Test SMS sends to phone
+Success message displays
+SMS received on phone
+
+MIGRATION FROM TWILIO
+
+If migrating from Twilio:
+
+1. Remove Twilio credentials from .env
+2. Remove twilio package from package.json
+3. Run npm install to update
+4. Clone SMS-Sender repository
+5. Run pip3 install -r requirements.txt
+6. Test SMS sending
+7. Deploy to production
+
+The application now uses Python SMS-Sender exclusively for SMS delivery.

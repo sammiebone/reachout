@@ -1,0 +1,378 @@
+REACHOUT SYSTEM OVERVIEW
+
+Complete architecture documentation for the email and SMS messaging application.
+
+ARCHITECTURE
+
+Frontend Layer
+React 18 with Vite build tool
+TipTap WYSIWYG editor for message composition
+Axios for API communication
+Responsive UI with CSS styling
+
+Backend Layer
+Node.js with Express framework
+Nodemailer for email delivery via Gmail SMTP
+Python SMS-Sender for SMS delivery
+CORS enabled for frontend communication
+
+Communication Layer
+Email via Nodemailer + Gmail SMTP
+SMS via Python child process + SMS-Sender
+
+Database
+Not implemented (can be added)
+Current design stateless per request
+Optional PostgreSQL integration available
+
+DATA FLOW
+
+1. User Input
+   User enters email address
+   User adds phone numbers
+   User composes message with rich text editor
+
+2. Frontend Processing
+   Form validation
+   HTML content collection from TipTap editor
+   API request sent to backend
+
+3. Backend Processing
+   Request validation
+   HTML to plain text conversion
+   Concurrent email and SMS sending
+   Response generation
+
+4. Communication
+   Email: Nodemailer connects to Gmail SMTP
+   SMS: Python process called via child_process
+   Results collected and returned
+
+5. Response
+   Success status
+   Email message ID
+   SMS message IDs array
+   Error messages if applicable
+
+FILE STRUCTURE
+
+Root Directory
+├── server.js                    (Express backend)
+├── sms_service.py               (Python SMS wrapper)
+├── package.json                 (Node dependencies)
+├── requirements.txt             (Python dependencies)
+├── .env                         (Configuration)
+├── .env.example                 (Configuration template)
+├── .gitignore                   (Git ignore)
+├── setup.sh                     (Setup automation)
+├── SMS-Sender/                  (Python SMS library)
+│   └── (cloned from GitHub)
+└── client/                      (React frontend)
+    ├── package.json
+    ├── vite.config.js
+    ├── index.html
+    └── src/
+        ├── main.jsx
+        ├── App.jsx
+        ├── index.css
+        └── components/
+            ├── EmailPhoneForm.jsx
+            └── MessageEditor.jsx
+
+COMMUNICATION ENDPOINTS
+
+POST /api/send
+Purpose: Send email and SMS messages
+Request Body:
+{
+  "email": "string (email address)",
+  "phoneNumbers": ["string (phone numbers)"],
+  "htmlContent": "string (HTML markup)"
+}
+
+Response Success:
+{
+  "success": true,
+  "emailMessageId": "string",
+  "smsMessageIds": ["string", "string"]
+}
+
+Response Error:
+{
+  "error": "string (error message)"
+}
+
+TECHNOLOGY STACK
+
+Frontend
+React 18.2.0
+Vite (build tool)
+TipTap 2.1.0 (WYSIWYG editor)
+Axios (HTTP client)
+CSS3 (styling)
+
+Backend
+Node.js (runtime)
+Express 4.18.2 (framework)
+Nodemailer 6.9.7 (email)
+body-parser (middleware)
+cors (middleware)
+dotenv (configuration)
+
+SMS Integration
+Python 3.8+ (runtime)
+SMS-Sender (SMS library)
+requests (HTTP library)
+
+DEPLOYMENT ARCHITECTURE
+
+Development Environment
+Frontend: http://localhost:5173
+Backend: http://localhost:5000
+Proxy: Vite proxies /api to backend
+
+Production Environment
+Frontend: Built as static files
+Backend: Serves frontend + API
+HTTPS: Required for production
+Database: Optional PostgreSQL
+Monitoring: Application performance monitoring
+
+PERFORMANCE CHARACTERISTICS
+
+Frontend Build
+Output: ~250KB gzipped (typical)
+Load time: <2 seconds
+First contentful paint: <1 second
+
+Backend Response Times
+Email sending: 1-5 seconds
+SMS sending: 2-10 seconds per message
+API response: <500ms overhead
+Total round trip: 3-15 seconds
+
+Scaling Considerations
+Stateless backend allows horizontal scaling
+Load balancer for multiple backend instances
+Database for persistence (future)
+Queue system for high volume (future)
+Redis caching (future)
+
+SECURITY ARCHITECTURE
+
+Input Validation
+Email format validation
+Phone number format validation
+HTML content passthrough
+
+Credential Management
+Environment variables for secrets
+No credentials in code
+.env file excluded from git
+Separate production credentials
+
+Communication Security
+HTTPS required for production
+Gmail app password authentication
+No sensitive data in logs
+User data not persisted
+
+MONITORING AND OBSERVABILITY
+
+Logging
+Console logging to stdout
+Error logging with stack traces
+Request logging for debugging
+
+Metrics to Track
+API response times
+Error rates
+Message delivery success
+User volume
+Server resource usage
+
+Alerting (Recommended)
+High error rate alerts
+API response time alerts
+Service availability alerts
+Resource usage alerts
+
+ERROR HANDLING
+
+Frontend
+Form validation errors
+Network request errors
+Loading states
+User-friendly error messages
+
+Backend
+Request validation errors
+Email delivery failures
+SMS delivery failures
+Graceful error responses
+Stack trace logging
+
+Python SMS Service
+Gateway connection errors
+Invalid phone numbers
+Service timeout handling
+JSON parsing errors
+
+CONFIGURATION MANAGEMENT
+
+Environment Variables
+PORT - Server port
+NODE_ENV - Environment mode
+EMAIL_USER - Gmail address
+EMAIL_PASSWORD - Gmail app password
+SMS_PROVIDER - SMS service identifier
+
+Runtime Configuration
+API endpoint URLs
+Service credentials
+Logging levels
+Rate limiting rules
+
+TESTING STRATEGY
+
+Unit Tests
+Component tests for React
+Service tests for backend functions
+SMS-Sender integration tests
+
+Integration Tests
+API endpoint tests
+Email delivery tests
+SMS delivery tests
+Form validation tests
+
+Manual Testing
+User acceptance testing
+Performance testing
+Security testing
+Cross-browser testing
+
+BACKUP AND RECOVERY
+
+Data Persistence
+Current: Stateless per request
+Recommended: Add PostgreSQL
+Backup strategy: Database backups
+
+Disaster Recovery
+Code repository on GitHub
+Infrastructure as Code (future)
+Automated deployment (future)
+Regular backups of credentials
+
+MAINTENANCE SCHEDULE
+
+Weekly
+Monitor error logs
+Check delivery success rates
+Review resource usage
+
+Monthly
+Update dependencies
+Security patches
+Performance review
+
+Quarterly
+Feature updates
+Architectural review
+Capacity planning
+
+FUTURE ENHANCEMENTS
+
+Phase 1
+Database integration (PostgreSQL)
+Message history storage
+User authentication
+
+Phase 2
+Message templates
+Scheduled sending
+Delivery tracking dashboard
+
+Phase 3
+A/B testing for messages
+Analytics dashboard
+Rate limiting per user
+
+Phase 4
+Webhook integrations
+Custom SMS gateways
+Advanced routing
+
+INTEGRATION POINTS
+
+External Services
+Gmail SMTP (email delivery)
+SMS-Sender (SMS delivery)
+SMS gateways (via SMS-Sender)
+
+Internal Services
+Frontend React app
+Backend Express API
+Python SMS service
+
+Future Integrations
+Database (PostgreSQL)
+Message queue (Redis)
+Cache layer (Redis)
+Analytics service
+Monitoring service
+
+COMPLIANCE AND STANDARDS
+
+Data Privacy
+No user data persisted
+No tracking
+No cookies
+Stateless design
+
+SMS Compliance
+Phone number format validation
+Message length validation
+GDPR compliant (no data storage)
+
+Email Compliance
+Gmail terms of service compliance
+Nodemailer best practices
+Email validation
+
+API Standards
+RESTful design
+JSON request/response
+HTTP status codes
+Error response format
+
+DOCUMENTATION STRUCTURE
+
+README.txt - Project overview
+QUICK_START.txt - Getting started guide
+SMS_SETUP.txt - SMS-Sender configuration
+API_DOCUMENTATION.txt - API reference
+DEPLOYMENT_GUIDE.txt - Production deployment
+CONFIGURATION_DETAILS.txt - Configuration reference
+TROUBLESHOOTING.txt - Common issues
+MIGRATION_FROM_TWILIO.txt - Twilio migration guide
+SYSTEM_OVERVIEW.txt - This document
+
+VERSION INFORMATION
+
+Application Version: 1.0.0
+Node.js Minimum: 16.0.0
+Python Minimum: 3.8.0
+React Version: 18.2.0
+Vite Version: 5.0.0
+TipTap Version: 2.1.0
+
+CONTACT AND SUPPORT
+
+Documentation: See included .txt files
+SMS-Sender Issues: https://github.com/farukalpay/SMS-Sender
+Node.js Help: https://nodejs.org
+Python Help: https://python.org
+
+This concludes the system overview. Refer to specific documentation files for detailed information on any component.

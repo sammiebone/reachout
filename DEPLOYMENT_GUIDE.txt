@@ -1,0 +1,284 @@
+REACHOUT DEPLOYMENT GUIDE
+
+PRODUCTION DEPLOYMENT STRATEGIES
+
+This guide covers deploying Reachout to various cloud platforms.
+
+HEROKU DEPLOYMENT
+
+Prerequisites
+Heroku account
+Heroku CLI installed
+Git repository initialized
+
+Steps
+
+1. Create Procfile in root directory
+   web: npm start
+
+2. Create .env file on Heroku
+   heroku create reachout-app
+   heroku config:set TWILIO_ACCOUNT_SID=your_sid
+   heroku config:set TWILIO_AUTH_TOKEN=your_token
+   heroku config:set TWILIO_PHONE_NUMBER=+1234567890
+   heroku config:set EMAIL_USER=your_email@gmail.com
+   heroku config:set EMAIL_PASSWORD=your_app_password
+   heroku config:set NODE_ENV=production
+
+3. Build and deploy
+   npm run build
+   git push heroku main
+
+4. Scale workers if needed
+   heroku ps:scale web=1
+
+RAILWAY DEPLOYMENT
+
+Prerequisites
+Railway account
+GitHub repository connected
+
+Steps
+
+1. Connect GitHub repository to Railway
+2. Add environment variables in Railway dashboard
+3. Set build command: npm install && npm run build
+4. Set start command: npm start
+5. Deploy automatically on git push
+
+DIGITALOCEAN APP PLATFORM
+
+Prerequisites
+DigitalOcean account
+App specification file
+
+Steps
+
+1. Create app.yaml in root directory
+   name: reachout
+   services:
+   - name: web
+     github:
+       repo: your_username/reachout
+       branch: main
+     build_command: npm install && npm run build
+     run_command: npm start
+     http_port: 5000
+
+2. Configure environment variables in DigitalOcean UI
+3. Deploy through DigitalOcean console
+
+AWS ELASTIC BEANSTALK
+
+Prerequisites
+AWS account
+AWS CLI configured
+Elastic Beanstalk CLI
+
+Steps
+
+1. Initialize Elastic Beanstalk
+   eb init -p node.js-18 reachout-app
+
+2. Create environment
+   eb create reachout-production
+
+3. Set environment variables
+   eb setenv TWILIO_ACCOUNT_SID=your_sid
+   eb setenv TWILIO_AUTH_TOKEN=your_token
+   eb setenv TWILIO_PHONE_NUMBER=+1234567890
+   eb setenv EMAIL_USER=your_email@gmail.com
+   eb setenv EMAIL_PASSWORD=your_app_password
+   eb setenv NODE_ENV=production
+
+4. Deploy
+   eb deploy
+
+DOCKER DEPLOYMENT
+
+Create Dockerfile in root directory
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 5000
+
+CMD ["npm", "start"]
+
+Build and run
+docker build -t reachout .
+docker run -p 5000:5000 --env-file .env reachout
+
+Environment Variables for Production
+
+PORT=5000
+NODE_ENV=production
+TWILIO_ACCOUNT_SID=your_production_sid
+TWILIO_AUTH_TOKEN=your_production_token
+TWILIO_PHONE_NUMBER=+1234567890
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+
+DATABASE CONSIDERATIONS
+
+Current implementation uses no database
+For production with persistence, add:
+PostgreSQL for message history
+Redis for rate limiting cache
+MongoDB for flexible data storage
+
+SECURITY CHECKLIST
+
+SSL/TLS Certificate
+Use HTTPS in production
+Update package dependencies
+Implement authentication layer
+Add rate limiting middleware
+Validate and sanitize all inputs
+Use environment secrets manager
+Implement CORS properly
+Add security headers
+Enable request logging
+Monitor for vulnerabilities
+
+MONITORING AND LOGGING
+
+Implement structured logging
+Monitor API response times
+Track error rates
+Set up alerts for failures
+Monitor Twilio API usage
+Monitor Gmail sending limits
+Track SMS delivery success rates
+
+PERFORMANCE OPTIMIZATION
+
+Enable gzip compression
+Implement caching headers
+Optimize asset delivery
+Use CDN for static files
+Monitor server resources
+Scale horizontally if needed
+Implement background job queue
+Use database indexing if applicable
+
+DATABASE SCHEMA EXAMPLE
+
+If adding PostgreSQL persistence
+
+CREATE TABLE messages (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  phone_numbers TEXT ARRAY,
+  html_content TEXT,
+  plain_text_content TEXT,
+  email_message_id VARCHAR(255),
+  sms_message_ids TEXT ARRAY,
+  status VARCHAR(50),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+
+CREATE TABLE audit_logs (
+  id SERIAL PRIMARY KEY,
+  user_id VARCHAR(255),
+  action VARCHAR(100),
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  details TEXT
+)
+
+REVERSE PROXY CONFIGURATION
+
+Nginx configuration example
+
+upstream reachout {
+  server localhost:5000
+}
+
+server {
+  listen 80
+  server_name api.reachout.com
+
+  location / {
+    proxy_pass http://reachout
+    proxy_http_version 1.1
+    proxy_set_header Upgrade $http_upgrade
+    proxy_set_header Connection 'upgrade'
+    proxy_set_header Host $host
+    proxy_cache_bypass $http_upgrade
+    proxy_set_header X-Real-IP $remote_addr
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for
+  }
+}
+
+LOAD BALANCER SETUP
+
+For high-traffic deployment
+Use load balancer with multiple instances
+Configure health checks on /health endpoint
+Implement sticky sessions if needed
+Use geographic routing for global distribution
+
+BACKUP AND DISASTER RECOVERY
+
+Implement automated backups
+Store credentials in vault
+Document recovery procedures
+Test recovery regularly
+Monitor system health
+
+DOMAIN SETUP
+
+Point domain to deployment platform
+Use custom domain on Heroku
+Configure DNS records
+Enable HTTPS with certificate
+Set up email verification
+
+MONITORING SERVICES
+
+Integrate with monitoring tools
+Datadog for application monitoring
+New Relic for performance
+Sentry for error tracking
+PagerDuty for alerting
+
+POST-DEPLOYMENT CHECKLIST
+
+Verify environment variables loaded
+Test email sending
+Test SMS sending
+Check API endpoints
+Verify CORS configuration
+Monitor error logs
+Test error handling
+Verify response times
+Check database connections
+Test rate limiting
+Verify authentication works
+Check logging output
+
+ROLLBACK PROCEDURE
+
+If issues occur after deployment
+Revert to previous version
+Check error logs
+Verify environment variables
+Test in staging first
+Document issue for analysis
+
+CONTINUOUS DEPLOYMENT
+
+Set up CI/CD pipeline
+Run tests on pull requests
+Auto-deploy on merge to main
+Implement staging environment
+Automated testing before production

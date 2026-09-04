@@ -1,0 +1,297 @@
+MIGRATION FROM TWILIO TO PYTHON SMS-SENDER
+
+This document explains the changes made to switch from Twilio to Python SMS-Sender for SMS delivery.
+
+WHAT CHANGED
+
+Backend SMS Integration
+Replaced Twilio API client with Python SMS-Sender wrapper
+Removed twilio npm package dependency
+Added child process execution for Python service
+
+Environment Variables
+Removed TWILIO_ACCOUNT_SID
+Removed TWILIO_AUTH_TOKEN
+Removed TWILIO_PHONE_NUMBER
+Added SMS_PROVIDER=python-sms-sender
+
+Server Architecture
+Added sms_service.py for Python integration
+Modified server.js to call Python child process
+Implemented sendSmsViaPython function
+Maintained same API response format
+
+BENEFITS OF SWITCH
+
+Flexibility in SMS providers
+Python SMS-Sender supports multiple gateways
+Not tied to single provider like Twilio
+Cost optimization options
+Alternative SMS services available
+Open source solution
+Community maintained package
+
+UPGRADE PATH
+
+If upgrading from Twilio version:
+
+1. Remove Twilio dependency
+   Edit package.json
+   Remove twilio package
+   npm install to update
+
+2. Set up Python SMS-Sender
+   python3 --version (verify 3.8+)
+   git clone https://github.com/farukalpay/SMS-Sender.git
+   pip3 install -r requirements.txt
+
+3. Update environment
+   Remove TWILIO_* variables from .env
+   Add SMS_PROVIDER=python-sms-sender
+   Configure SMS gateway credentials
+
+4. Test SMS sending
+   Start application with npm run dev
+   Send test message
+   Verify SMS delivery
+
+5. Update documentation
+   Read SMS_SETUP.txt for details
+   Follow SMS-Sender configuration guide
+   Update any custom documentation
+
+CONFIGURATION MIGRATION
+
+Old Twilio Setup
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=your_token_here
+TWILIO_PHONE_NUMBER=+14155552671
+
+New Python SMS-Sender Setup
+SMS_PROVIDER=python-sms-sender
+Configure SMS gateway credentials in SMS-Sender
+
+SMS Gateway Options
+
+SMS-Sender supports various gateways:
+AWS SNS
+Nexmo
+Custom HTTP endpoints
+Other providers via plugin system
+
+Research SMS-Sender documentation for your chosen gateway.
+
+API RESPONSE CHANGES
+
+Response format remains the same for backward compatibility:
+
+{
+  "success": true,
+  "emailMessageId": "message-id-from-nodemailer",
+  "smsMessageIds": ["sms_phonenumber_0", "sms_phonenumber_1"]
+}
+
+Message IDs from Python SMS-Sender differ from Twilio SIDs
+Application code consuming API needs no changes
+Format follows pattern: sms_<cleaned_phone>_<index>
+
+BACKEND CODE CHANGES
+
+Old server.js implementation
+import twilio from 'twilio'
+const twilioClient = twilio(sid, token)
+twilioClient.messages.create({body, from, to})
+
+New server.js implementation
+import {spawn} from 'child_process'
+const pythonProcess = spawn('python3', [path.join(__dirname, 'sms_service.py')])
+pythonProcess handles JSON input/output
+
+PERFORMANCE CONSIDERATIONS
+
+Twilio Integration
+Direct API calls
+Network latency to Twilio servers
+Per-message charge model
+
+Python SMS-Sender Integration
+Child process overhead minimal
+Gateway performance depends on provider
+Batch sending possible with careful implementation
+May have different rate limits per gateway
+
+TESTING CHANGES
+
+Update test cases for SMS delivery
+Mock Python child process instead of Twilio
+Test error handling from Python service
+Verify message format conversion
+
+Example Test Case
+
+OLD: Test Twilio message creation
+NEW: Test Python process spawning and JSON handling
+
+Test both success and failure paths
+Verify error messages from Python service
+
+TROUBLESHOOTING MIGRATION
+
+Python not found
+Error: python3 command not found
+Solution: Install Python 3.8+, add to PATH
+
+SMS-Sender directory missing
+Error: SMS-Sender not installed
+Solution: git clone https://github.com/farukalpay/SMS-Sender.git
+
+Dependencies missing
+Error: ModuleNotFoundError
+Solution: pip3 install -r requirements.txt
+
+SMS-Sender configuration needed
+Error: SMS gateway not configured
+Solution: Follow SMS-Sender/README.md for setup
+
+Child process timeout
+Error: SMS service timeout
+Solution: Verify network, check SMS gateway, increase timeout
+
+ROLLBACK TO TWILIO
+
+If you need to revert to Twilio:
+
+1. Install Twilio package
+   npm install twilio
+
+2. Restore Twilio code in server.js
+   import twilio from 'twilio'
+   Restore Twilio client initialization
+   Restore SMS sending logic
+
+3. Update .env
+   Add TWILIO_ACCOUNT_SID
+   Add TWILIO_AUTH_TOKEN
+   Add TWILIO_PHONE_NUMBER
+
+4. Test Twilio integration
+   Verify credentials
+   Send test messages
+
+DEPLOYMENT CONSIDERATIONS
+
+Production Server Requirements
+
+Python 3.8 or higher must be installed
+SMS-Sender repository cloned in application root
+Python dependencies installed via pip3
+SMS gateway credentials securely configured
+Path to Python binary accessible to Node.js process
+
+Docker Deployment
+
+Dockerfile must include Python installation
+Example: FROM node:18-alpine
+Add: RUN apk add python3 py3-pip
+Clone SMS-Sender in Dockerfile
+Install Python dependencies in Dockerfile
+
+Example Multi-Stage Dockerfile
+
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN npm install
+RUN cd client && npm install && cd ..
+
+FROM node:18-alpine
+RUN apk add python3 py3-pip
+WORKDIR /app
+COPY --from=builder /app .
+RUN git clone https://github.com/farukalpay/SMS-Sender.git
+RUN pip3 install -r requirements.txt
+EXPOSE 5000
+CMD ["npm", "start"]
+
+Cloud Deployment
+
+Heroku: Add Python buildpack before Node.js buildpack
+Railway: Python included automatically
+DigitalOcean: Install Python on deployment
+AWS: Configure Python in deployment configuration
+Vercel: Not supported (serverless functions)
+
+SUPPORT AND DOCUMENTATION
+
+SMS-Sender Repository
+https://github.com/farukalpay/SMS-Sender
+Check README for latest features
+Report issues on GitHub
+Join discussions for help
+
+Python Documentation
+https://docs.python.org/3
+
+Node.js Child Process
+https://nodejs.org/api/child_process.html
+
+MONITORING AND LOGGING
+
+Track SMS delivery success rates
+Monitor Python process spawning
+Log SMS-Sender output
+Alert on SMS failures
+Monitor gateway status
+Track API response times
+
+COST COMPARISON
+
+Twilio
+Per-SMS charge (typically $0.01-0.05)
+Account fees for phone number
+Rate limiting based on plan
+Easy scaling
+
+Python SMS-Sender
+Varies by gateway used
+Some free tier options
+Different rate limiting per gateway
+Cost optimization possible
+
+TIMELINE FOR MIGRATION
+
+Week 1: Install Python, SMS-Sender, test
+Week 2: Update development environment
+Week 3: Test staging deployment
+Week 4: Deploy to production
+
+Quick Migration (if confident)
+Day 1: Set up Python SMS-Sender
+Day 2: Deploy to staging
+Day 3: Deploy to production
+
+CHECKLIST FOR MIGRATION
+
+Python 3.8+ installed
+SMS-Sender cloned and configured
+Python dependencies installed
+.env updated with new variables
+Twilio dependencies removed
+server.js verified with new SMS logic
+sms_service.py present and executable
+API tests passing
+SMS delivery tested
+Documentation updated
+Team trained on new system
+Monitoring set up for new system
+Production deployment planned
+Rollback procedure documented
+
+ADDITIONAL RESOURCES
+
+SMS-Sender GitHub: https://github.com/farukalpay/SMS-Sender
+SMS Gateways: Research specific provider documentation
+Python Requests: https://requests.readthedocs.io
+Child Process Spawn: https://nodejs.org/api/child_process.html#child_process_child_process_spawn
+
+Contact support for SMS-Sender at the GitHub repository.

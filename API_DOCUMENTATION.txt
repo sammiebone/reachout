@@ -1,0 +1,210 @@
+REACHOUT API DOCUMENTATION
+
+BASE URL
+http://localhost:5000/api
+
+SEND MESSAGE ENDPOINT
+
+POST /api/send
+
+Description
+Sends an HTML-formatted message as an email and as plain text SMS messages to multiple recipients.
+
+Request Headers
+Content-Type: application/json
+
+Request Body
+{
+  "email": "string (required)",
+  "phoneNumbers": ["string", "string"] (required, minimum 1),
+  "htmlContent": "string (required)"
+}
+
+Field Descriptions
+
+email
+Type: string
+Format: valid email address
+Description: Target recipient email address for HTML message
+
+phoneNumbers
+Type: array of strings
+Format: Phone numbers with country code. Example: "+1234567890"
+Description: Array of phone numbers to send SMS messages. Minimum one number required.
+
+htmlContent
+Type: string
+Format: HTML markup
+Description: The message body in HTML format. Converted to plain text for SMS.
+
+Response Success
+
+HTTP Status: 200 OK
+
+{
+  "success": true,
+  "emailMessageId": "string",
+  "smsMessageIds": ["string", "string"]
+}
+
+Field Descriptions
+
+success
+Boolean indicating successful delivery
+
+emailMessageId
+Message ID from Nodemailer service for email tracking
+
+smsMessageIds
+Array of Twilio message SIDs for SMS tracking
+
+Response Error
+
+HTTP Status: 400 or 500
+
+{
+  "error": "string describing the error"
+}
+
+Error Codes
+
+400 Bad Request
+Missing required fields
+Invalid email format
+Phone numbers array is empty
+
+401 Unauthorized
+Invalid Twilio credentials
+Invalid Gmail credentials
+
+500 Internal Server Error
+Email delivery failed
+SMS delivery failed
+Network error
+Service unavailable
+
+EXAMPLE REQUEST
+
+curl -X POST http://localhost:5000/api/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "phoneNumbers": ["+12025551234", "+12025554567"],
+    "htmlContent": "<h1>Hello</h1><p>This is a test message.</p>"
+  }'
+
+EXAMPLE RESPONSE
+
+{
+  "success": true,
+  "emailMessageId": "1234567890",
+  "smsMessageIds": ["SM1234567890", "SM0987654321"]
+}
+
+HTML TO PLAIN TEXT CONVERSION
+
+The API automatically converts HTML to plain text for SMS delivery using the following rules:
+
+1. Style and script tags removed
+2. BR tags converted to newlines
+3. P opening tags removed
+4. P closing tags converted to newlines
+5. All other HTML tags removed
+6. HTML entities decoded
+   &nbsp converted to space
+   &lt converted to less-than
+   &gt converted to greater-than
+   &amp converted to ampersand
+   &#39 converted to apostrophe
+   &quot converted to quote
+7. Result trimmed of leading/trailing whitespace
+
+Example HTML Input
+<h1>Important Notice</h1>
+<p>Please review the attached document.</p>
+<p>Thank you</p>
+
+Plain Text Output
+Important Notice
+Please review the attached document
+Thank you
+
+EMAIL DELIVERY
+
+Service: Nodemailer with Gmail SMTP
+From: Configured EMAIL_USER in environment
+To: Recipient email from request
+Subject: "Your Message"
+Format: Multipart with HTML and plain text alternatives
+
+SMS DELIVERY
+
+Service: Python SMS-Sender
+From: SMS provider gateway
+To: Phone numbers from request
+Format: Plain text only
+Character Limit: 160 characters per SMS segment
+Processing: Synchronous via child process call to Python service
+
+RATE LIMITING
+
+No rate limiting implemented in current version
+Recommended for production deployment
+Implement per-IP or per-email rate limits
+Track message volume per user
+Prevent abuse and excessive API usage
+
+SECURITY REQUIREMENTS
+
+Environment Variables
+Store all credentials in .env file
+Never commit credentials to version control
+Use app-specific passwords for Gmail
+Use strong Twilio auth tokens
+
+Input Validation
+Email format validation on backend
+Phone number format validation
+HTML content sanitization recommended for production
+HTTPS required for production
+
+Authentication
+Current implementation has no authentication
+Recommended to add JWT or API key authentication
+Implement user accounts with rate limiting
+Log all message deliveries for auditing
+
+ASYNC OPERATIONS
+
+Email and SMS sending are asynchronous
+Promise.all waits for all operations
+Partial failures return errors
+Recommendation: implement retry logic for production
+
+RESPONSE TIMES
+
+Average email delivery: 1-5 seconds
+Average SMS delivery: 2-10 seconds
+API response time: depends on service availability
+Network latency affects overall response time
+
+MONITORING
+
+Enable request logging on backend
+Track email delivery success/failure rates
+Monitor Twilio account for SMS failures
+Set up alerts for service issues
+Keep audit logs of all messages sent
+
+PRODUCTION CONSIDERATIONS
+
+Use environment-specific configuration
+Implement request validation middleware
+Add request size limits
+Implement CORS properly
+Use HTTPS only
+Set up monitoring and alerting
+Implement rate limiting
+Add authentication layer
+Use background job queue for message sending
+Add retry logic with exponential backoff

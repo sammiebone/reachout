@@ -1,0 +1,517 @@
+RAILWAY DEPLOYMENT GUIDE
+
+Complete step-by-step guide to deploy Reachout on Railway.
+
+WHAT IS RAILWAY
+
+Modern cloud platform for deploying applications
+Supports Node.js, Python, PostgreSQL, and more
+Simple GitHub integration
+Easy environment management
+Free tier available ($5 credit monthly)
+
+ADVANTAGES
+
+Simple one-click deployment
+Automatic SSL/HTTPS
+Built-in monitoring
+Integrated PostgreSQL support
+GitHub auto-deploy on push
+Environment variable management
+Custom domain support
+Generous free tier
+
+PREREQUISITES
+
+GitHub account (free at github.com)
+Railway account (free at railway.app)
+This Reachout repository pushed to GitHub
+
+STEP 1: PREPARE GITHUB REPOSITORY
+
+1. Create GitHub repository
+   Visit github.com
+   Click New Repository
+   Name: reachout (or your choice)
+   Description: Email and SMS messaging app
+   Public or Private (up to you)
+   Click Create Repository
+
+2. Push Reachout code to GitHub
+   cd ~/Downloads/Reachout
+   git init
+   git add .
+   git commit -m "Initial Reachout application commit"
+   git branch -M main
+   git remote add origin https://github.com/your_username/reachout.git
+   git push -u origin main
+
+3. Verify repository
+   Visit github.com/your_username/reachout
+   Confirm all files uploaded
+   Check SMS-Sender submodule (if applicable)
+
+STEP 2: CONNECT RAILWAY
+
+1. Visit Railway
+   Go to railway.app
+   Click Sign Up or Log In
+   Connect with GitHub account
+   Authorize Railway access to repositories
+
+2. Create New Project
+   Click New Project
+   Select Deploy from GitHub repo
+   Find reachout repository
+   Click Deploy
+
+3. Railway builds application
+   Automatically detects Node.js
+   Installs dependencies
+   May take 2-3 minutes
+
+STEP 3: CONFIGURE ENVIRONMENT VARIABLES
+
+Railway Dashboard
+
+1. Click on your Reachout project
+2. Click Variables tab
+3. Add environment variables:
+
+   PORT=3000
+   NODE_ENV=production
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASSWORD=your_gmail_app_password
+   SMS_PROVIDER=python-sms-sender
+
+4. Click Add Variable for each one
+
+STEP 4: CONFIGURE PYTHON AND SMS-SENDER
+
+Create railway.json in root directory:
+
+{
+  "buildCommand": "pip install -r requirements.txt && npm install && cd client && npm install && cd ..",
+  "startCommand": "npm start"
+}
+
+Or create Procfile instead:
+
+web: npm start
+
+Both work on Railway. Procfile is simpler.
+
+STEP 5: HANDLE SMS-SENDER INTEGRATION
+
+Option A: Include SMS-Sender in Repository (Recommended)
+
+1. Add SMS-Sender as git submodule
+   git submodule add https://github.com/farukalpay/SMS-Sender.git SMS-Sender
+
+2. Commit changes
+   git add .gitmodules SMS-Sender
+   git commit -m "Add SMS-Sender submodule"
+   git push origin main
+
+3. Railway automatically clones submodule
+   Runs pip install -r requirements.txt
+   Python SMS-Sender available at runtime
+
+Option B: Clone During Build
+
+Modify Procfile:
+
+web: git clone https://github.com/farukalpay/SMS-Sender.git && npm start
+
+Less reliable but works if submodule not preferred.
+
+STEP 6: BUILD REACT FRONTEND
+
+Create .railway/Dockerfile in root:
+
+FROM node:18-alpine
+
+RUN apk add python3 py3-pip
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+RUN cd client && npm install && cd ..
+RUN npm run build
+RUN pip install -r requirements.txt
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+
+Or let Railway auto-detect package.json and build scripts.
+
+STEP 7: DEPLOY
+
+1. Push to GitHub
+   git push origin main
+
+2. Railway auto-deploys
+   Watches main branch
+   Automatically builds and deploys on push
+   No manual deployment needed
+
+3. Check deployment status
+   Railway Dashboard > Deployments tab
+   View logs in real-time
+   Check for errors or warnings
+
+STEP 8: CONFIGURE DOMAIN
+
+Add Custom Domain
+
+1. Railway Dashboard
+2. Click your Reachout project
+3. Click Settings tab
+4. Add Custom Domain
+5. Enter your domain (example.com)
+
+Update DNS Records
+
+If using GoDaddy, Namecheap, etc:
+
+1. Go to domain registrar
+2. Find DNS settings
+3. Add CNAME record
+   Name: @
+   Value: railway domain provided by Railway
+4. Also add www subdomain
+   Name: www
+   Value: same railway domain
+
+Propagation
+
+DNS propagation takes 5-60 minutes
+Refresh browser after propagation
+HTTPS automatic with Railway
+
+STEP 9: VERIFY DEPLOYMENT
+
+1. Visit your domain
+   https://yourdomain.com
+   Should load Reachout application
+
+2. Test email functionality
+   Fill in email field
+   Add phone number
+   Type message
+   Click Send
+   Check email for message
+
+3. Test SMS functionality
+   Verify SMS-Sender cloned properly
+   Check server logs for SMS output
+   Verify SMS received on phone
+
+4. Check logs for errors
+   Railway Dashboard > Logs
+   Look for any error messages
+   Python SMS service should appear
+
+ENVIRONMENT VARIABLES REFERENCE
+
+Variable: PORT
+Value: 3000 (Railway default)
+Description: Server listening port
+
+Variable: NODE_ENV
+Value: production
+Description: Production environment
+
+Variable: EMAIL_USER
+Value: your_email@gmail.com
+Description: Gmail sender address
+
+Variable: EMAIL_PASSWORD
+Value: your_app_password
+Description: Gmail app-specific password
+
+Variable: SMS_PROVIDER
+Value: python-sms-sender
+Description: SMS service identifier
+
+MONITORING AND LOGS
+
+Railway Dashboard
+
+1. Click your project
+2. Click Logs tab
+3. View real-time server logs
+4. Filter by service type
+5. Search for errors
+
+What to Monitor
+
+API response times
+Error messages
+SMS delivery status
+Email delivery status
+Resource usage (CPU, memory)
+
+Set up Alerts (Optional)
+
+Click Notifications
+Set up email alerts for deployments
+Alert on failed builds
+Alert on errors
+
+SCALING ON RAILWAY
+
+Default Resources
+
+CPU: Shared (free tier)
+Memory: 512MB (free tier)
+Disk: 10GB (free tier)
+
+Upgrade Resources
+
+Click Settings
+Change Instance Plan
+More CPU and memory available
+Pay per resource usage
+
+Auto-Scaling
+
+Railway supports auto-scaling
+Configure minimum/maximum instances
+Scales based on resource usage
+Only pay for what you use
+
+DATABASE INTEGRATION (FUTURE)
+
+Add PostgreSQL
+
+1. Railway Dashboard
+2. Click New Service
+3. Select PostgreSQL
+4. Connect to Node.js project
+5. Environment variables auto-created
+
+Use PostgreSQL
+
+Install package: npm install pg
+Use connection string from environment
+Store message history
+Track delivery metrics
+
+CONTINUOUS INTEGRATION
+
+GitHub Integration
+
+Railway watches your GitHub repo
+Automatically deploys on push
+No manual deployment needed
+Automatic rollback on build failure
+
+Deploy Preview
+
+Create pull request on GitHub
+Railway deploys preview environment
+Test changes before merging
+Merge to deploy to production
+
+TROUBLESHOOTING
+
+Application not loading
+
+Check server is running
+View logs for errors
+Verify environment variables set
+Check port configuration
+
+Build fails
+
+Review build logs in Railway dashboard
+Check package.json syntax
+Verify Node.js version compatible
+Ensure requirements.txt valid
+
+SMS not sending
+
+Verify SMS-Sender submodule cloned
+Check Python installed on Railway
+Verify SMS gateway configured
+Review error logs
+
+Environment variables not working
+
+Ensure variables set in Railway dashboard
+Restart deployment after adding variables
+Check variable names exact match
+Verify no spaces in values
+
+Domain not working
+
+Check DNS records updated
+Wait for propagation (60 minutes)
+Verify CNAME record correct
+Check SSL certificate generated
+
+DEPLOYING UPDATES
+
+1. Make code changes locally
+2. Commit changes
+   git add .
+   git commit -m "Update feature"
+3. Push to GitHub
+   git push origin main
+4. Railway auto-deploys
+5. Visit domain to verify
+
+ROLLBACK TO PREVIOUS VERSION
+
+1. Railway Dashboard > Deployments
+2. Find previous working deployment
+3. Click Redeploy
+4. Previous version deployed instantly
+5. Zero downtime deployment
+
+COST ESTIMATION
+
+Railway Pricing
+
+Free Tier: $5 credit monthly
+Shared CPU: Free
+512MB Memory: ~$2/month
+Database: $5/month if added
+Total: $7-12/month typical
+
+Compared to Alternatives
+
+Heroku: $7-14/month (no free tier)
+DigitalOcean: $4-12/month
+AWS: Variable ($1-50+/month)
+Railway: $5 credit + usage
+
+BACKUP AND RECOVERY
+
+Enable Backups (if using PostgreSQL)
+
+1. Click PostgreSQL service
+2. Enable automated backups
+3. Daily backups retained
+4. One-click restore available
+
+Code Backup
+
+GitHub is your backup
+All code versioned
+Easy to clone and redeploy
+Branch protection available
+
+MONITORING PERFORMANCE
+
+Railway Metrics
+
+CPU usage
+Memory usage
+Network I/O
+Response times
+Error rates
+
+Set up Monitoring
+
+Use Railway built-in monitoring
+Or integrate external services:
+  Sentry for error tracking
+  DataDog for APM
+  New Relic for performance
+
+SECURITY
+
+HTTPS Automatic
+
+Railway provides free SSL certificate
+Auto-renewed annually
+HTTPS enforced by default
+No configuration needed
+
+Environment Variable Security
+
+Secrets not visible in code
+Encrypted in Railway
+Only accessible to application
+Not logged in build output
+
+Source Code Protection
+
+Keep repository private if needed
+GitHub access tokens secure
+SSH keys managed by Railway
+No credentials in repository
+
+TEAM COLLABORATION
+
+Multiple Developers
+
+1. All push to GitHub main branch
+2. Railway auto-deploys on push
+3. Deployment notifications sent
+4. View deployment history
+
+Branch Deployments (Optional)
+
+Deploy from development branch
+Test before merging to main
+Preview deployments available
+Automatic cleanup
+
+CUSTOM DOMAIN WITH EMAIL
+
+If domain has email elsewhere
+
+1. Keep email with current provider
+2. Point subdomain to Railway
+   app.yourdomain.com → Railway
+3. Keep root domain for email
+   yourdomain.com → current provider
+
+Example DNS Setup
+
+Domain Provider: GoDaddy
+Email: GoDaddy MX records
+App: Railway CNAME record
+
+SUPPORT AND DOCUMENTATION
+
+Railway Docs: https://docs.railway.app
+GitHub Issues: Report bugs on repository
+Railway Discord: Community support
+Email Support: Available on paid plans
+
+DEPLOYMENT CHECKLIST
+
+GitHub repository created
+All code pushed to GitHub
+SMS-Sender submodule added
+.env.example file present
+package.json has build scripts
+requirements.txt has Python deps
+Environment variables configured
+Custom domain configured (optional)
+HTTPS working
+Email tested
+SMS tested
+Logs checked
+Monitoring set up
+Backup strategy decided
+
+NEXT STEPS AFTER DEPLOYMENT
+
+1. Test all functionality
+2. Set up monitoring
+3. Configure backups
+4. Add custom domain
+5. Optimize performance
+6. Set up team access
+7. Plan for scaling
+8. Document deployment
+
+Production is now live on Railway.

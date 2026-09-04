@@ -1,0 +1,157 @@
+RAILWAY DEPLOYMENT QUICK START
+
+Deploy Reachout to Railway in 5 minutes.
+
+REQUIREMENTS
+
+GitHub account
+Railway account (free at railway.app)
+Git installed locally
+Gmail account with app password
+
+STEP 1: PREPARE CODE FOR GITHUB (5 minutes)
+
+1. Initialize git repository
+   cd ~/Downloads/Reachout
+   git init
+
+2. Add SMS-Sender as submodule
+   git submodule add https://github.com/farukalpay/SMS-Sender.git SMS-Sender
+
+3. Commit all files
+   git add .
+   git commit -m "Initial Reachout application"
+
+4. Rename branch to main
+   git branch -M main
+
+STEP 2: CREATE GITHUB REPOSITORY (5 minutes)
+
+1. Visit github.com
+2. Click New Repository
+3. Name: reachout
+4. Select Public (easier) or Private
+5. Do NOT initialize with README
+6. Click Create Repository
+
+7. Add remote to local repo
+   git remote add origin https://github.com/YOUR_USERNAME/reachout.git
+
+8. Push code
+   git push -u origin main
+
+9. Verify on GitHub
+   Visit github.com/YOUR_USERNAME/reachout
+   All files should appear
+
+STEP 3: DEPLOY TO RAILWAY (5 minutes)
+
+1. Visit railway.app
+2. Sign up or log in
+3. Click New Project
+4. Select Deploy from GitHub repo
+5. Authorize Railway to access GitHub
+6. Search for reachout repository
+7. Click Deploy
+
+Railway automatically builds application
+
+STEP 4: CONFIGURE ENVIRONMENT (2 minutes)
+
+1. In Railway dashboard click your project
+2. Click Variables tab
+3. Add these variables:
+
+   PORT = 3000
+   NODE_ENV = production
+   EMAIL_USER = your_email@gmail.com
+   EMAIL_PASSWORD = your_gmail_app_password
+   SMS_PROVIDER = python-sms-sender
+
+4. Save variables
+
+STEP 5: VERIFY DEPLOYMENT (2 minutes)
+
+1. Railway dashboard shows deployment status
+2. Click Deployments tab
+3. Should show green checkmark
+4. Click the deployment link (automatic domain)
+5. Reachout app loads in browser
+
+TEST APPLICATION
+
+1. Enter test email address
+2. Add test phone number
+3. Type test message
+4. Click Send Message
+5. Check email inbox
+6. Check SMS on phone
+
+STEP 6: CONFIGURE CUSTOM DOMAIN (3 minutes, optional)
+
+1. Railway dashboard > Settings
+2. Click Add Custom Domain
+3. Enter your domain (example.com)
+4. Go to domain registrar (GoDaddy, Namecheap, etc)
+5. Add CNAME record:
+   Name: @
+   Value: provided by Railway
+6. Wait 5-60 minutes for DNS propagation
+7. Visit https://yourdomain.com
+
+AUTOMATIC DEPLOYMENT
+
+Every time you push to GitHub:
+1. git push origin main
+2. Railway automatically deploys
+3. No manual steps needed
+4. View logs in Railway dashboard
+
+TROUBLESHOOTING QUICK FIXES
+
+Deployment fails
+Check railway.json syntax
+View build logs in Railway dashboard
+Verify requirements.txt exists
+
+App not loading
+Check Logs tab for errors
+Verify environment variables set
+Restart deployment
+
+Email not sending
+Confirm EMAIL_USER is correct
+Confirm EMAIL_PASSWORD is Gmail app password
+Check that 2FA enabled on Gmail
+
+SMS not sending
+Verify SMS-Sender submodule cloned
+Check build logs for Python errors
+Confirm SMS gateway configured
+
+COST
+
+Railway Free Tier: $5 credit monthly
+Typical app cost: $2-7/month
+Much cheaper than cPanel hosting
+
+WHAT HAPPENS NEXT
+
+Application runs 24/7 on Railway
+No need to keep computer running
+No need to manage servers
+Railway handles scaling
+Updates deploy instantly
+
+DOCUMENTATION
+
+Full guide: RAILWAY_DEPLOYMENT.txt
+Technical overview: SYSTEM_OVERVIEW.txt
+Troubleshooting: TROUBLESHOOTING.txt
+
+Questions or issues:
+Check RAILWAY_DEPLOYMENT.txt
+Visit railway.app/docs
+Contact Railway support
+
+That's it. Your application is now live on Railway.

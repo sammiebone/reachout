@@ -1,0 +1,340 @@
+* {
+  margin: 0
+  padding: 0
+  box-sizing: border-box
+}
+
+html, body {
+  height: 100%
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+  min-height: 100vh
+  color: #333
+}
+
+#root {
+  display: flex
+  justify-content: center
+  align-items: center
+  min-height: 100vh
+  padding: 20px
+}
+
+.container {
+  background: white
+  border-radius: 12px
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3)
+  width: 100%
+  max-width: 900px
+  padding: 40px
+}
+
+h1 {
+  font-size: 32px
+  margin-bottom: 30px
+  color: #1a1a1a
+}
+
+.form-group {
+  margin-bottom: 24px
+}
+
+label {
+  display: block
+  font-weight: 600
+  margin-bottom: 8px
+  color: #333
+  font-size: 14px
+}
+
+input[type="email"],
+input[type="text"],
+input[type="tel"] {
+  width: 100%
+  padding: 12px 14px
+  border: 2px solid #e0e0e0
+  border-radius: 6px
+  font-size: 14px
+  font-family: inherit
+  transition: border-color 0.3s
+}
+
+input[type="email"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus {
+  outline: none
+  border-color: #667eea
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1)
+}
+
+.phone-input-group {
+  display: flex
+  gap: 10px
+  margin-bottom: 12px
+}
+
+.phone-input-group input {
+  flex: 1
+}
+
+.phone-input-group button {
+  padding: 12px 16px
+  background-color: #e74c3c
+  color: white
+  border: none
+  border-radius: 6px
+  font-weight: 600
+  cursor: pointer
+  transition: background-color 0.3s
+}
+
+.phone-input-group button:hover {
+  background-color: #c0392b
+}
+
+.phone-list {
+  list-style: none
+  padding: 12px
+  background: #f9f9f9
+  border-radius: 6px
+  margin-bottom: 12px
+}
+
+.phone-list li {
+  padding: 8px 0
+  display: flex
+  justify-content: space-between
+  align-items: center
+  border-bottom: 1px solid #e0e0e0
+}
+
+.phone-list li:last-child {
+  border-bottom: none
+}
+
+.remove-btn {
+  background-color: #e74c3c
+  color: white
+  border: none
+  padding: 4px 8px
+  border-radius: 4px
+  cursor: pointer
+  font-size: 12px
+  transition: background-color 0.3s
+}
+
+.remove-btn:hover {
+  background-color: #c0392b
+}
+
+.editor-container {
+  margin-bottom: 24px
+}
+
+.editor-wrapper {
+  border: 2px solid #e0e0e0
+  border-radius: 6px
+  overflow: hidden
+  background: white
+}
+
+.editor-toolbar {
+  display: flex
+  flex-wrap: wrap
+  gap: 4px
+  padding: 12px
+  background-color: #f9f9f9
+  border-bottom: 1px solid #e0e0e0
+}
+
+.editor-toolbar button {
+  padding: 8px 12px
+  background-color: white
+  border: 1px solid #d0d0d0
+  border-radius: 4px
+  cursor: pointer
+  font-size: 13px
+  font-weight: 500
+  transition: all 0.3s
+}
+
+.editor-toolbar button:hover {
+  background-color: #e0e0e0
+  border-color: #999
+}
+
+.editor-toolbar button.active {
+  background-color: #667eea
+  color: white
+  border-color: #667eea
+}
+
+.tiptap {
+  padding: 20px
+  min-height: 300px
+  font-size: 16px
+  outline: none
+}
+
+.tiptap h1 {
+  font-size: 24px
+  font-weight: 700
+  margin: 20px 0 10px 0
+}
+
+.tiptap h2 {
+  font-size: 20px
+  font-weight: 600
+  margin: 16px 0 8px 0
+}
+
+.tiptap h3 {
+  font-size: 18px
+  font-weight: 600
+  margin: 12px 0 6px 0
+}
+
+.tiptap p {
+  margin: 8px 0
+  line-height: 1.6
+}
+
+.tiptap ul,
+.tiptap ol {
+  margin: 12px 0
+  padding-left: 24px
+}
+
+.tiptap li {
+  margin: 4px 0
+}
+
+.tiptap strong {
+  font-weight: 700
+}
+
+.tiptap em {
+  font-style: italic
+}
+
+.tiptap u {
+  text-decoration: underline
+}
+
+.button-group {
+  display: flex
+  gap: 12px
+}
+
+button.submit-btn {
+  flex: 1
+  padding: 14px 24px
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+  color: white
+  border: none
+  border-radius: 6px
+  font-size: 16px
+  font-weight: 700
+  cursor: pointer
+  transition: all 0.3s
+}
+
+button.submit-btn:hover {
+  transform: translateY(-2px)
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3)
+}
+
+button.submit-btn:disabled {
+  opacity: 0.6
+  cursor: not-allowed
+  transform: none
+}
+
+button.clear-btn {
+  padding: 14px 24px
+  background-color: #e0e0e0
+  color: #333
+  border: none
+  border-radius: 6px
+  font-size: 16px
+  font-weight: 700
+  cursor: pointer
+  transition: all 0.3s
+}
+
+button.clear-btn:hover {
+  background-color: #c0c0c0
+}
+
+.loading {
+  display: flex
+  align-items: center
+  justify-content: center
+  gap: 8px
+}
+
+.spinner {
+  width: 16px
+  height: 16px
+  border: 2px solid rgba(255, 255, 255, 0.3)
+  border-top-color: white
+  border-radius: 50%
+  animation: spin 0.6s linear infinite
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg)
+  }
+}
+
+.alert {
+  padding: 16px 20px
+  border-radius: 6px
+  margin-bottom: 24px
+  font-weight: 500
+}
+
+.alert-success {
+  background-color: #d4edda
+  color: #155724
+  border: 1px solid #c3e6cb
+}
+
+.alert-error {
+  background-color: #f8d7da
+  color: #721c24
+  border: 1px solid #f5c6cb
+}
+
+.alert-info {
+  background-color: #d1ecf1
+  color: #0c5460
+  border: 1px solid #bee5eb
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px
+  }
+
+  h1 {
+    font-size: 24px
+  }
+
+  .button-group {
+    flex-direction: column
+  }
+
+  .editor-toolbar {
+    gap: 2px
+  }
+
+  .editor-toolbar button {
+    padding: 6px 10px
+    font-size: 12px
+  }
+}
