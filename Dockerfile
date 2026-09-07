@@ -10,6 +10,8 @@ RUN git clone https://github.com/farukalpay/SMS-Sender.git SMS-Sender || true
 
 RUN pip install --break-system-packages -r requirements.txt
 
+RUN if [ -f SMS-Sender/requirements.txt ]; then pip install --break-system-packages -r SMS-Sender/requirements.txt; fi
+
 RUN npm install
 
 RUN cd client && npm install && cd ..
