@@ -10,7 +10,7 @@ RUN git clone https://github.com/farukalpay/SMS-Sender.git SMS-Sender || true
 
 RUN pip install --break-system-packages -r requirements.txt
 
-RUN if [ -f SMS-Sender/requirements.txt ]; then sed -i '/^random==/d; /^string==/d; /^time==/d; /^itertools==/d' SMS-Sender/requirements.txt && pip install --break-system-packages -r SMS-Sender/requirements.txt; fi
+RUN if [ -f SMS-Sender/requirements.txt ]; then sed -i '/^random==/d; /^string==/d; /^time==/d; /^itertools==/d; /^json==/d' SMS-Sender/requirements.txt && pip install --break-system-packages -r SMS-Sender/requirements.txt; fi
 
 RUN npm install
 
