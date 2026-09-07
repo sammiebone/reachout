@@ -1,10 +1,12 @@
 FROM node:18-alpine
 
-RUN apk add --no-cache python3 py3-pip
+RUN apk add --no-cache python3 py3-pip git
 
 WORKDIR /app
 
 COPY . .
+
+RUN git clone https://github.com/farukalpay/SMS-Sender.git SMS-Sender || true
 
 RUN pip install --break-system-packages -r requirements.txt
 
