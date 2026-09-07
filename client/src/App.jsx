@@ -91,7 +91,10 @@ function App() {
 
   return (
     <div className="container">
-      <h1>Reachout</h1>
+      <div className="header">
+        <h1>REACHOUT</h1>
+        <p>Send coordinated messages across email and SMS</p>
+      </div>
 
       {alert && (
         <div className={`alert alert-${alert.type}`}>
@@ -100,41 +103,106 @@ function App() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <EmailPhoneForm
-          email={email}
-          setEmail={setEmail}
-          phoneNumbers={phoneNumbers}
-          onPhoneAdd={handlePhoneAdd}
-          onPhoneRemove={handlePhoneRemove}
-        />
+        <div className="form-wrapper">
+          <div className="channel channel-email">
+            <div className="channel-label">Email Channel</div>
+            <div className="form-group">
+              <label htmlFor="email">Recipient Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="recipient@example.com"
+              />
+            </div>
+          </div>
 
-        <MessageEditor
-          content={editorContent}
-          onChange={handleEditorChange}
-        />
+          <div className="channel">
+            <div className="channel-label">SMS Channel</div>
+            <div className="form-group">
+              <label htmlFor="phone">Phone Numbers</label>
+              <div className="phone-actions">
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter phone number"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      const cleanPhone = e.target.value.replace(/\D/g, '')
+                      if (cleanPhone.length < 10) {
+                        alert('Please enter a valid phone number with at least 10 digits')
+                        return
+                      }
+                      const formattedPhone = '+1' + cleanPhone.slice(-10)
+                      handlePhoneAdd(formattedPhone)
+                      e.target.value = ''
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn-add-phone"
+                  onClick={(e) => {
+                    const input = e.target.previousElementSibling
+                    const cleanPhone = input.value.replace(/\D/g, '')
+                    if (cleanPhone.length < 10) {
+                      alert('Please enter a valid phone number with at least 10 digits')
+                      return
+                    }
+                    const formattedPhone = '+1' + cleanPhone.slice(-10)
+                    handlePhoneAdd(formattedPhone)
+                    input.value = ''
+                  }}
+                >
+                  Add
+                </button>
+              </div>
 
-        <div className="button-group">
+              {phoneNumbers.length > 0 && (
+                <ul className="phone-list">
+                  {phoneNumbers.map((phone, index) => (
+                    <li key={index}>
+                      <span>{phone}</span>
+                      <button
+                        type="button"
+                        onClick={() => handlePhoneRemove(phone)}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="editor-label">Message</div>
+
+        <div className="editor-section">
+          <MessageEditor
+            content={editorContent}
+            onChange={handleEditorChange}
+          />
+        </div>
+
+        <div className="actions-wrapper">
           <button
             type="submit"
-            className="submit-btn"
+            className={`btn-send ${loading ? 'loading' : ''}`}
             disabled={loading}
           >
-            {loading ? (
-              <div className="loading">
-                <span>Sending</span>
-                <div className="spinner"></div>
-              </div>
-            ) : (
-              'Send Message'
-            )}
+            {loading ? 'Sending Message...' : 'Send to Both Channels'}
           </button>
           <button
             type="button"
-            className="clear-btn"
+            className="btn-clear"
             onClick={handleClear}
             disabled={loading}
           >
-            Clear Form
+            Clear
           </button>
         </div>
       </form>
