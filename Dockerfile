@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install -r requirements.txt
+RUN pip install --break-system-packages -r requirements.txt
 
 RUN npm install
 
