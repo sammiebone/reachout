@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 def send_sms(phone_numbers, message):
-    try
+    try:
         sms_sender_path = Path(__file__).parent / 'SMS-Sender'
 
         if not sms_sender_path.exists():
