@@ -22,6 +22,7 @@ def send_sms(phone_numbers, message):
 
             result = subprocess.run(
                 [sys.executable, str(sms_sender_path / 'main.py'), phone_clean, message],
+                input='US\n',
                 capture_output=True,
                 text=True,
                 timeout=30
