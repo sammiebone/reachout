@@ -19,28 +19,28 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname, 'client/dist')))
 
-const emailTransporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', emailConfigured: !!emailTransporter })
 })
 
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-  console.warn('WARNING: EMAIL_USER or EMAIL_PASSWORD not set in environment')
-}
+console.log('Initializing email transporter...')
+console.log('EMAIL_USER:', process.env.EMAIL_USER ? '***set***' : 'NOT SET')
+console.log('EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '***set***' : 'NOT SET')
 
-// Verify email transporter in background (non-blocking)
-setTimeout(() => {
-  emailTransporter.verify((error, success) => {
-    if (error) {
-      console.error('Email transporter verify error:', error)
-    } else {
-      console.log('Email transporter verified successfully')
+let emailTransporter
+try {
+  emailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
     }
   })
-}, 1000)
+  console.log('Email transporter created successfully')
+} catch (error) {
+  console.error('Error creating email transporter:', error)
+  emailTransporter = null
+}
 
 function stripHtmlToPlainText(html) {
   return html
@@ -113,6 +113,10 @@ app.post('/api/send', async (req, res) => {
     const plainTextContent = stripHtmlToPlainText(htmlContent)
 
     console.log(`[${new Date().toISOString()}] Sending to email: ${email}, phones: ${phoneNumbers.join(',')}`)
+
+    if (!emailTransporter) {
+      throw new Error('Email transporter not configured')
+    }
 
     const emailPromise = emailTransporter.sendMail({
       from: process.env.EMAIL_USER,
