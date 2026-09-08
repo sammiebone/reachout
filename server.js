@@ -27,6 +27,18 @@ const emailTransporter = nodemailer.createTransport({
   }
 })
 
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+  console.warn('WARNING: EMAIL_USER or EMAIL_PASSWORD not set in environment')
+}
+
+emailTransporter.verify((error, success) => {
+  if (error) {
+    console.error('Email transporter verify error:', error)
+  } else {
+    console.log('Email transporter verified successfully')
+  }
+})
+
 function stripHtmlToPlainText(html) {
   return html
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
@@ -108,6 +120,9 @@ app.post('/api/send', async (req, res) => {
     }).then(result => {
       console.log(`[${new Date().toISOString()}] Email sent in ${Date.now() - startTime}ms`)
       return result
+    }).catch(error => {
+      console.error(`[${new Date().toISOString()}] Email send failed:`, error.message)
+      throw error
     })
 
     const smsPromise = sendSmsViaPython(phoneNumbers, plainTextContent)
