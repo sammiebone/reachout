@@ -103,76 +103,50 @@ function sendSmsViaPython(phoneNumbers, message) {
 
 app.post('/api/send', async (req, res) => {
   const startTime = Date.now()
+
   try {
+    console.log(`[${new Date().toISOString()}] /api/send called`)
+
     const { email, phoneNumbers, htmlContent } = req.body
 
     if (!email || !phoneNumbers || phoneNumbers.length === 0 || !htmlContent) {
+      console.log('Missing required fields')
       return res.status(400).json({ error: 'Missing required fields' })
     }
 
-    const plainTextContent = stripHtmlToPlainText(htmlContent)
-
-    console.log(`[${new Date().toISOString()}] Sending to email: ${email}, phones: ${phoneNumbers.join(',')}`)
-
     if (!emailTransporter) {
-      throw new Error('Email transporter not configured')
+      console.error('Email transporter not configured')
+      return res.status(500).json({ error: 'Email service not configured' })
     }
 
-    const emailPromise = emailTransporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Your Message',
-      html: htmlContent,
-      text: plainTextContent
-    }).then(result => {
-      console.log(`[${new Date().toISOString()}] Email sent in ${Date.now() - startTime}ms`)
-      return result
-    }).catch(error => {
-      console.error(`[${new Date().toISOString()}] Email send failed:`, error.message)
-      throw error
-    })
+    const plainTextContent = stripHtmlToPlainText(htmlContent)
+    console.log(`Sending to email: ${email}, phones: ${phoneNumbers.join(',')}`)
 
-    const smsPromise = sendSmsViaPython(phoneNumbers, plainTextContent)
-      .then(ids => {
-        console.log(`[${new Date().toISOString()}] SMS sent in ${Date.now() - startTime}ms`)
-        return ids
+    // Send email only (SMS can wait or be skipped for now)
+    try {
+      console.log('Attempting email send...')
+      const emailResult = await emailTransporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Your Message',
+        html: htmlContent,
+        text: plainTextContent
       })
+      console.log(`Email sent successfully (${Date.now() - startTime}ms): ${emailResult.messageId}`)
 
-    const emailTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Email timeout after 25s')), 25000)
-    )
-
-    const smsTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('SMS timeout after 15s')), 15000)
-    )
-
-    let emailResult, smsMessageIds
-
-    try {
-      console.log(`[${new Date().toISOString()}] Starting email send...`)
-      emailResult = await Promise.race([emailPromise, emailTimeout])
-      console.log(`[${new Date().toISOString()}] Email sent successfully in ${Date.now() - startTime}ms`)
+      return res.json({
+        success: true,
+        message: 'Email sent successfully',
+        emailMessageId: emailResult.messageId,
+        smsMessageIds: []
+      })
     } catch (emailError) {
-      console.error(`[${new Date().toISOString()}] Email failed after ${Date.now() - startTime}ms:`, emailError.message)
-      throw emailError
+      console.error(`Email send error: ${emailError.message}`)
+      return res.status(500).json({ error: `Email failed: ${emailError.message}` })
     }
-
-    try {
-      smsMessageIds = await Promise.race([smsPromise, smsTimeout])
-      console.log(`[${new Date().toISOString()}] SMS sent successfully`)
-    } catch (smsError) {
-      console.warn(`[${new Date().toISOString()}] SMS warning:`, smsError.message)
-      smsMessageIds = []
-    }
-
-    res.json({
-      success: true,
-      emailMessageId: emailResult.messageId,
-      smsMessageIds: smsMessageIds
-    })
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Error sending messages (${Date.now() - startTime}ms):`, error)
-    res.status(500).json({ error: error.message })
+    console.error(`Unexpected error in /api/send: ${error.message}`)
+    return res.status(500).json({ error: `Server error: ${error.message}` })
   }
 })
 
