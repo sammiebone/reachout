@@ -31,13 +31,16 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
   console.warn('WARNING: EMAIL_USER or EMAIL_PASSWORD not set in environment')
 }
 
-emailTransporter.verify((error, success) => {
-  if (error) {
-    console.error('Email transporter verify error:', error)
-  } else {
-    console.log('Email transporter verified successfully')
-  }
-})
+// Verify email transporter in background (non-blocking)
+setTimeout(() => {
+  emailTransporter.verify((error, success) => {
+    if (error) {
+      console.error('Email transporter verify error:', error)
+    } else {
+      console.log('Email transporter verified successfully')
+    }
+  })
+}, 1000)
 
 function stripHtmlToPlainText(html) {
   return html
