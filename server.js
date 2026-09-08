@@ -87,6 +87,7 @@ function sendSmsViaPython(phoneNumbers, message) {
 }
 
 app.post('/api/send', async (req, res) => {
+  const startTime = Date.now()
   try {
     const { email, phoneNumbers, htmlContent } = req.body
 
@@ -96,17 +97,33 @@ app.post('/api/send', async (req, res) => {
 
     const plainTextContent = stripHtmlToPlainText(htmlContent)
 
+    console.log(`[${new Date().toISOString()}] Sending to email: ${email}, phones: ${phoneNumbers.join(',')}`)
+
     const emailPromise = emailTransporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'Your Message',
       html: htmlContent,
       text: plainTextContent
+    }).then(result => {
+      console.log(`[${new Date().toISOString()}] Email sent in ${Date.now() - startTime}ms`)
+      return result
     })
 
     const smsPromise = sendSmsViaPython(phoneNumbers, plainTextContent)
+      .then(ids => {
+        console.log(`[${new Date().toISOString()}] SMS sent in ${Date.now() - startTime}ms`)
+        return ids
+      })
 
-    const [emailResult, smsMessageIds] = await Promise.all([emailPromise, smsPromise])
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
+    )
+
+    const [emailResult, smsMessageIds] = await Promise.race([
+      Promise.all([emailPromise, smsPromise]),
+      timeoutPromise
+    ])
 
     res.json({
       success: true,
@@ -114,7 +131,7 @@ app.post('/api/send', async (req, res) => {
       smsMessageIds: smsMessageIds
     })
   } catch (error) {
-    console.error('Error sending messages:', error)
+    console.error(`[${new Date().toISOString()}] Error sending messages (${Date.now() - startTime}ms):`, error)
     res.status(500).json({ error: error.message })
   }
 })
