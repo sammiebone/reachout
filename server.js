@@ -116,14 +116,31 @@ app.post('/api/send', async (req, res) => {
         return ids
       })
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
+    const emailTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Email timeout')), 10000)
     )
 
-    const [emailResult, smsMessageIds] = await Promise.race([
-      Promise.all([emailPromise, smsPromise]),
-      timeoutPromise
-    ])
+    const smsTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('SMS timeout')), 10000)
+    )
+
+    let emailResult, smsMessageIds
+
+    try {
+      emailResult = await Promise.race([emailPromise, emailTimeout])
+      console.log(`[${new Date().toISOString()}] Email sent successfully`)
+    } catch (emailError) {
+      console.error(`[${new Date().toISOString()}] Email failed:`, emailError.message)
+      throw emailError
+    }
+
+    try {
+      smsMessageIds = await Promise.race([smsPromise, smsTimeout])
+      console.log(`[${new Date().toISOString()}] SMS sent successfully`)
+    } catch (smsError) {
+      console.warn(`[${new Date().toISOString()}] SMS warning:`, smsError.message)
+      smsMessageIds = []
+    }
 
     res.json({
       success: true,
