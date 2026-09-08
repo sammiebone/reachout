@@ -132,20 +132,21 @@ app.post('/api/send', async (req, res) => {
       })
 
     const emailTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Email timeout')), 10000)
+      setTimeout(() => reject(new Error('Email timeout after 25s')), 25000)
     )
 
     const smsTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('SMS timeout')), 10000)
+      setTimeout(() => reject(new Error('SMS timeout after 15s')), 15000)
     )
 
     let emailResult, smsMessageIds
 
     try {
+      console.log(`[${new Date().toISOString()}] Starting email send...`)
       emailResult = await Promise.race([emailPromise, emailTimeout])
-      console.log(`[${new Date().toISOString()}] Email sent successfully`)
+      console.log(`[${new Date().toISOString()}] Email sent successfully in ${Date.now() - startTime}ms`)
     } catch (emailError) {
-      console.error(`[${new Date().toISOString()}] Email failed:`, emailError.message)
+      console.error(`[${new Date().toISOString()}] Email failed after ${Date.now() - startTime}ms:`, emailError.message)
       throw emailError
     }
 
