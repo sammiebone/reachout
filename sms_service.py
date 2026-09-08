@@ -20,20 +20,31 @@ def send_sms(phone_numbers, message):
         for phone in phone_numbers:
             phone_clean = ''.join(filter(str.isdigit, phone))
 
-            result = subprocess.run(
-                [sys.executable, str(sms_sender_path / 'main.py'), phone_clean, message],
-                input='US\n',
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
+            try:
+                result = subprocess.run(
+                    [sys.executable, str(sms_sender_path / 'main.py'), phone_clean, message],
+                    input='US\n',
+                    capture_output=True,
+                    text=True,
+                    timeout=15
+                )
 
-            if result.returncode == 0:
-                message_ids.append(f'sms_{phone_clean}_{len(message_ids)}')
-            else:
+                if result.returncode == 0:
+                    message_ids.append(f'sms_{phone_clean}_{len(message_ids)}')
+                else:
+                    failed.append({
+                        'phone': phone,
+                        'error': result.stderr or 'Unknown error'
+                    })
+            except subprocess.TimeoutExpired:
                 failed.append({
                     'phone': phone,
-                    'error': result.stderr
+                    'error': 'SMS service timeout'
+                })
+            except Exception as e:
+                failed.append({
+                    'phone': phone,
+                    'error': str(e)
                 })
 
         if failed and len(message_ids) == 0:
