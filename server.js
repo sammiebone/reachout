@@ -30,11 +30,15 @@ console.log('EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '***set***' : 'NOT S
 let emailTransporter
 try {
   emailTransporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD
-    }
+    },
+    connectionTimeout: 5000,
+    socketTimeout: 5000
   })
   console.log('Email transporter created successfully')
 } catch (error) {
@@ -121,7 +125,7 @@ app.post('/api/send', async (req, res) => {
     let emailMessageId = null
     if (emailTransporter) {
       try {
-        console.log('Attempting email send via Gmail...')
+        console.log(`Attempting email send via Gmail to ${email}...`)
         const emailResult = await Promise.race([
           emailTransporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -130,13 +134,15 @@ app.post('/api/send', async (req, res) => {
             html: htmlContent,
             text: plainTextContent
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Gmail timeout')), 10000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Gmail SMTP timeout after 15s')), 15000))
         ])
         emailMessageId = emailResult.messageId
-        console.log(`Email sent successfully: ${emailMessageId}`)
+        console.log(`✓ Email sent successfully in ${Date.now() - startTime}ms: ${emailMessageId}`)
       } catch (emailError) {
-        console.warn(`Email send failed: ${emailError.message}`)
+        console.warn(`✗ Email send failed (${Date.now() - startTime}ms): ${emailError.message}`)
       }
+    } else {
+      console.warn('Email transporter not initialized')
     }
 
     // If email wasn't sent, still return success with logged message
